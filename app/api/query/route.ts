@@ -5,6 +5,7 @@ import { PineconeStore } from "@langchain/pinecone";
 import { ChatOpenAI } from "@langchain/openai";
 import { SelfQueryRetriever } from "langchain/retrievers/self_query";
 import { PineconeTranslator } from "@langchain/pinecone";
+import { prompt } from '@/app/utils/SystemPrompt';
 
 const setupPineconeLangchain = async () => {
   const pinecone = new Pinecone({
@@ -66,7 +67,7 @@ export const POST = async (req: NextRequest) => {
 
     // Preparing messages for the LLM
     const messages = [
-      { type: "system", content: "You are a helpful assistant." },
+      { type: "system", content: 'You are a helpful ai assistant'},
       { type: "user", content: question },
       { type: "system", content: documentContents },
     ];

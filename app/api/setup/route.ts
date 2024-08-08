@@ -5,81 +5,92 @@ import { PineconeStore } from "@langchain/pinecone";
 import { ChatOpenAI } from "@langchain/openai";
 import { SelfQueryRetriever } from "langchain/retrievers/self_query";
 import { PineconeTranslator } from "@langchain/pinecone";
-import { loadDocumentsFromWeb } from '../../utils/loadDocuments';
+import puppeteer from 'puppeteer';
+import { Document } from "@langchain/core/documents";
 
-const url = "https://news.ycombinator.com/item?id=34817881";
+// Array of URLs to process
+const urls = [
+//   "https://www.torontomu.ca/",
+//   "https://www.torontomu.ca/programs/undergraduate/",
+//   "https://www.torontomu.ca/calendar/2024-2025/programs/",
+//   "https://www.torontomu.ca/calendar/2024-2025/dates/",
+//   "https://www.torontomu.ca/calendar/2024-2025/courses/computer-engineering/",
+//   "https://www.torontomu.ca/calendar/2024-2025/courses/computer-science/",
+//   "https://www.torontomu.ca/calendar/2024-2025/courses/",
+    "https://headstarter.co/",
+    "https://headstarter.co/network",
+    "https://headstarter.co/walloflove",
+    "https://headstarter.co/irl",
+    "https://headstarter.co/info",
+];
+
+// Function to chunk text into approximately 2000 character segments
+const chunkText = (text: string, chunkSize: number): string[] => {
+  const chunks = [];
+  for (let i = 0; i < text.length; i += chunkSize) {
+    chunks.push(text.slice(i, i + chunkSize));
+  }
+  return chunks;
+};
+
+// Function to load documents from the web
+const loadDocumentsFromWeb = async (url: string): Promise<Document[]> => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.goto(url, { waitUntil: 'domcontentloaded' });
+  const content = await page.evaluate(() => document.body.innerText); // Fetch the page content as plain text
+  await browser.close();
+
+  // Split content into chunks of approximately 2000 characters each
+  const chunkSize = 2000; // Adjust based on average token size
+  const chunks = chunkText(content, chunkSize);
+
+  // Create Document objects from chunks
+  const docs = chunks.map((chunk, index) => new Document({
+    pageContent: chunk,
+    metadata: { url, chunkIndex: index },
+  }));
+
+  return docs;
+};
 
 const setupPineconeLangchain = async () => {
-  console.log("Pinecone API Key:", process.env.PINECONE_API_KEY);
-  console.log("Pinecone Index:", process.env.PINECONE_INDEX);
-  console.log("OpenAI API Key:", process.env.OPENAI_API_KEY);
+  // Load documents from all URLs
+  let allDocs: Document[] = [];
+  for (const url of urls) {
+    const docs = await loadDocumentsFromWeb(url);
+    allDocs = allDocs.concat(docs);
+  }
+  console.log("Documents loaded:", allDocs);
 
+  // Initialize Pinecone
   const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY as string,
   });
   const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX as string);
+  console.log("Pinecone index initialized");
 
+  // Initialize embeddings
   const embeddings = new OpenAIEmbeddings({
     apiKey: process.env.OPENAI_API_KEY as string,
   });
-
   console.log("Embeddings instance created");
 
-  const docs = await loadDocumentsFromWeb(url);
-
-  // Ensure documents have unique IDs
-  docs.forEach((doc, index) => {
-    if (!doc.id) {
-      doc.id = `doc_${index}`;
-    }
+  // Create vector store from all documents
+  const vectorStore = await PineconeStore.fromDocuments(allDocs, embeddings, {
+    pineconeIndex: pineconeIndex,
   });
+  console.log("Vector store created");
 
-  // Check for existing documents in the index
-  const existingDocIds = new Set<string>();
-  for (const doc of docs) {
-    const contentToEmbed = `${doc.pageContent} ${JSON.stringify(doc.metadata)}`;
-    const queryResponse = await pineconeIndex.query({
-      vector: (await embeddings.embedDocuments([contentToEmbed]))[0],
-      topK: 1,
-      includeMetadata: true,
-    });
-
-    if (queryResponse.matches && queryResponse.matches.length > 0) {
-      existingDocIds.add(doc.id as string);
-    }
-  }
-
-  // Filter out documents that already exist in the index
-  const newDocs = docs.filter(doc => !existingDocIds.has(doc.id as string));
-
-  // Only upsert new documents
-  if (newDocs.length > 0) {
-    const vectors = await embeddings.embedDocuments(newDocs.map(doc => `${doc.pageContent} ${JSON.stringify(doc.metadata)}`));
-    const upsertVectors = newDocs.map((doc, index) => ({
-      id: doc.id as string,
-      values: vectors[index],
-      metadata: doc.metadata,
-    }));
-
-    await pineconeIndex.upsert(upsertVectors);
-
-    console.log("Vector store created with new documents");
-  } else {
-    console.log("No new documents to index");
-  }
-
-  const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
-    pineconeIndex,
-  });
-
+  // Initialize LLM
   const llm = new ChatOpenAI({
     model: "gpt-4o-mini",
     temperature: 0.8,
     apiKey: process.env.OPENAI_API_KEY as string,
   });
-
   console.log("LLM instance created");
 
+  // Initialize SelfQueryRetriever
   const selfQueryRetriever = SelfQueryRetriever.fromLLM({
     llm: llm,
     vectorStore: vectorStore,
@@ -87,18 +98,54 @@ const setupPineconeLangchain = async () => {
     attributeInfo: [],
     structuredQueryTranslator: new PineconeTranslator(),
   });
-
   console.log("SelfQueryRetriever instance created");
 
-  return selfQueryRetriever;
+  return { selfQueryRetriever, llm };
 };
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
   try {
-    const retriever = await setupPineconeLangchain();
-    return NextResponse.json({ message: "Retriever setup complete", retriever });
+    console.log("Received request");
+    const { question } = await req.json();
+    console.log("Question received:", question);
+
+    if (!question) {
+      console.log("No question provided");
+      return NextResponse.json({ error: "No question provided" }, { status: 400 });
+    }
+
+    const { selfQueryRetriever, llm } = await setupPineconeLangchain();
+    console.log("Pinecone and LangChain setup complete");
+
+    // Retrieve relevant documents
+    const relevantDocuments = await selfQueryRetriever.invoke(question);
+    console.log("Relevant documents retrieved:", relevantDocuments);
+
+    const documentContents = relevantDocuments.map(doc => doc.pageContent).join("\n");
+    console.log("Document contents:", documentContents);
+
+    // Prepare messages for the LLM
+    const messages = [
+      { role: "system", content: "You are a helpful assistant." },
+      { role: "user", content: question },
+      { role: "system", content: documentContents },
+    ];
+    console.log("Messages prepared for LLM:", messages);
+
+    // Generate a response based on the retrieved documents
+    const response = await llm.invoke(messages as any);
+    console.log("Response generated:", response);
+
+    const answer = response.content;
+    console.log("Generated response content:", answer);
+
+    return NextResponse.json({ response: answer });
   } catch (error) {
-    console.error("Error setting up Pinecone Langchain:", error);
+    console.error("Error processing query:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-}
+};
+
+export const OPTIONS = async () => {
+  return NextResponse.json({}, { status: 200 });
+};
