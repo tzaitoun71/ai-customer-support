@@ -39,16 +39,10 @@ const ChatPage = () => {
       });
 
       const data = await response.json();
-      const botMessageContent = data.response
-        .map((item: { pageContent: string }) => item.pageContent)
-        .join(', ');
+      const botMessageContent = data.response; // Directly use the response content
       const botMessage = { user: message, bot: botMessageContent };
 
-      setChat((prevChat) => {
-        const newChat = [...prevChat];
-        newChat[newChat.length - 1].bot = botMessage.bot;
-        return newChat;
-      });
+      setChat((prevChat) => [...prevChat, botMessage]);
       setIsTyping(false);
 
       // Scroll to the bottom of the chat container
