@@ -31,7 +31,7 @@ const ChatPage = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/customer-ai', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
