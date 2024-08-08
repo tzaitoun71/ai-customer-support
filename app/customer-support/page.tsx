@@ -9,7 +9,6 @@ import {
   ListItemText,
   Typography,
   Box,
-  Paper,
   ListItem,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
@@ -31,7 +30,7 @@ const ChatPage = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/customer-ai', {
+      const response = await fetch('/api/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,9 +39,16 @@ const ChatPage = () => {
       });
 
       const data = await response.json();
-      const botMessage = { user: message, bot: data.response };
+      const botMessageContent = data.response
+        .map((item: { pageContent: string }) => item.pageContent)
+        .join(', ');
+      const botMessage = { user: message, bot: botMessageContent };
 
-      setChat((prevChat) => [...prevChat, botMessage]);
+      setChat((prevChat) => {
+        const newChat = [...prevChat];
+        newChat[newChat.length - 1].bot = botMessage.bot;
+        return newChat;
+      });
       setIsTyping(false);
 
       // Scroll to the bottom of the chat container
