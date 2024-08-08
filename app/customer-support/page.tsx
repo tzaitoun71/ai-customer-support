@@ -35,7 +35,7 @@ const ChatPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ question: message }),
       });
 
       const data = await response.json();

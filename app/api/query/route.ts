@@ -21,7 +21,7 @@ const setupPineconeLangchain = async () => {
   });
 
   const llm = new ChatOpenAI({
-    model: "gpt-4o-mini",
+    model: "gpt-4",
     temperature: 0.8,
     apiKey: process.env.OPENAI_API_KEY as string,
   });
@@ -37,31 +37,49 @@ const setupPineconeLangchain = async () => {
   return { selfQueryRetriever, llm };
 };
 
-export async function POST(req: NextRequest) {
+export const POST = async (req: NextRequest) => {
   try {
+    console.log("Received request");
     const { question } = await req.json();
+    console.log("Question received:", question);
+
     if (!question) {
+      console.log("No question provided");
       return NextResponse.json({ error: "No question provided" }, { status: 400 });
     }
 
     const { selfQueryRetriever, llm } = await setupPineconeLangchain();
+    console.log("Pinecone and LangChain setup complete");
 
     // Retrieve relevant documents
     const relevantDocuments = await selfQueryRetriever.invoke(question);
+    console.log("Relevant documents retrieved:", relevantDocuments);
+
+    const documentContents = relevantDocuments.map(doc => doc.pageContent).join("\n");
+    console.log("Document contents:", documentContents);
 
     // Prepare messages for the LLM
     const messages = [
       { type: "system", content: "You are a helpful assistant." },
       { type: "user", content: question },
-      ...relevantDocuments.map(doc => ({ type: "system", content: doc.pageContent })),
+      { type: "system", content: documentContents },
     ];
+    console.log("Messages prepared for LLM:", messages);
 
     // Generate a response based on the retrieved documents
-    const response = await llm.generate(messages as any);
+    const response = await llm.invoke(messages as any);
+    console.log("Response generated:", response);
 
-    return NextResponse.json({ response: response.generations[0].toString() });
+    const answer = response.content;
+    console.log("Generated response content:", answer);
+
+    return NextResponse.json({ response: answer });
   } catch (error) {
     console.error("Error processing query:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-}
+};
+
+export const OPTIONS = async () => {
+  return NextResponse.json({}, { status: 200 });
+};
