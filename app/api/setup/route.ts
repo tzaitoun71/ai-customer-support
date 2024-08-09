@@ -13,13 +13,14 @@ const urls = [
     "https://www.torontomu.ca/",
     "https://www.torontomu.ca/programs/undergraduate/computer-engineering/",
     "https://www.torontomu.ca/admissions/undergraduate/apply/",
-    "https://www.torontomu.ca/programs/undergraduate/computer-engineering/#!tab-1691528434193-tuition-and-fees",
+    "https://www.torontomu.ca/programs/undergraduate/computer-engineering/#tab-1691528434193-tuition-and-fees",
     "https://www.torontomu.ca/calendar/2024-2025/programs/feas/computer_eng/#!accordion-1595938884546-full-time--four-year-program---software-engineering-option",
     "https://www.torontomu.ca/calendar/2024-2025/programs/feas/computer_eng/#!accordion-1595938884507-computer-engineering---common-first-two-years",
     "https://www.torontomu.ca/calendar/2024-2025/dates/",
     "https://www.torontomu.ca/programs/undergraduate/computer-science/",
     "https://www.torontomu.ca/programs/undergraduate/computer-science/#!accordion-1694188206521-requirements-for-full-time--4-year-program",
     "https://www.torontomu.ca/calendar/2024-2025/programs/science/computer_sci/#!accordion-1595938857886-full-time--four-year-program",
+    "https://www.torontomu.ca/programs/undergraduate/computer-science/#tab-1693260955526-tuition-and-fees",
 ];
 
 // Function to chunk text into approximately 2000 character segments
