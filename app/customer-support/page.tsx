@@ -40,7 +40,7 @@ const ChatPage = () => {
       });
 
       const data = await response.json();
-      const botMessageContent = data.response; // Directly use the response content
+      const botMessageContent = data.response;
       const botMessage = { user: message, bot: botMessageContent };
 
       setChat((prevChat) => [...prevChat, botMessage]);
@@ -82,23 +82,29 @@ const ChatPage = () => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
+        flexDirection: 'column', // Stack the title and chat box vertically
+        padding: 2,
+        boxSizing: 'border-box', // Include padding in the width and height calculations
       }}
     >
+      <Typography variant="h4" align="center" gutterBottom>
+        TMU Support Assistant
+      </Typography>
       <Box
         sx={{
           width: '100%',
-          maxWidth: '900px',
+          maxWidth: '600px', // Increase the max width for the chat box
           backgroundColor: 'white',
           boxShadow: 3,
           borderRadius: 2,
           display: 'flex',
           flexDirection: 'column',
           padding: 2,
+          marginTop: 2, // Add some space between the title and the chat box
+          marginBottom: 2, // Add some space below the chat box
+          flexGrow: 0, // Prevent the box from growing too large
         }}
       >
-        <Typography variant="h4" align="center" gutterBottom>
-          TMU Support Assistant
-        </Typography>
         <Box
           ref={chatContainerRef}
           sx={{
@@ -110,8 +116,7 @@ const ChatPage = () => {
             backgroundColor: '#fafafa',
             borderRadius: 2,
             boxShadow: 1,
-            width: '800px',
-            height: '800px',
+            height: '350px', // Increase the height for the chat container
           }}
         >
           <List sx={{ flexGrow: 1 }}>
@@ -158,7 +163,7 @@ const ChatPage = () => {
             )}
           </List>
         </Box>
-        <Box sx={{ display: 'flex', marginTop: 2, padding: '0 16px', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', marginTop: 2, padding: '0 12px', alignItems: 'center', width: '100%' }}>
           <TextField
             label="Type your message"
             variant="outlined"
@@ -168,7 +173,7 @@ const ChatPage = () => {
             onKeyPress={(e) => {
               if (e.key === 'Enter') handleSendMessage();
             }}
-            sx={{ marginRight: 2 }}
+            sx={{ marginRight: 1 }} // Adjust the margin to push the "Send" button slightly to the left
           />
           <Button variant="contained" color="primary" onClick={handleSendMessage} endIcon={<SendIcon />}>
             Send

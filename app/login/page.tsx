@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      router.push('/customer-support');
+      router.push('/landing-page');
     }
   }, [user, router]);
 
