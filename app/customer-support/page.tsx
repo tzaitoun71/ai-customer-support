@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { blue, yellow } from '@mui/material/colors';
+import ReactMarkdown from 'react-markdown';
 
 const ChatPage = () => {
   const [message, setMessage] = useState('');
@@ -129,7 +130,11 @@ const ChatPage = () => {
                     boxShadow: 1,
                   }}
                 >
-                  <ListItemText primary={chatItem.bot ? chatItem.bot : chatItem.user} />
+                  {chatItem.bot ? (
+                    <ReactMarkdown>{chatItem.bot}</ReactMarkdown>
+                  ) : (
+                    <ListItemText primary={chatItem.user} />
+                  )}
                 </Box>
               </ListItem>
             ))}
