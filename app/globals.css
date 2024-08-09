@@ -5,6 +5,17 @@ html, body {
 }
 
 body {
-  display: block; 
+  display: flex; 
+  flex-direction: column;
   overflow: hidden; 
+  background: url('/bg4.jpg') no-repeat center center fixed;
+  background-size: cover;
+  z-index: -1; 
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000; 
 }
