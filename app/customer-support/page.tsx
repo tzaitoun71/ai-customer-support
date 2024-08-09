@@ -125,7 +125,7 @@ const ChatPage = () => {
                 <Box
                   component="div"
                   sx={{
-                    backgroundColor: chatItem.bot ? yellow[100] : blue[100],
+                    backgroundColor: chatItem.bot ? yellow[200] : blue[300],
                     color: 'black',
                     borderRadius: 2,
                     padding: '10px 15px',

@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button, Box, InputBase } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/material/styles';
+import { useUser } from '../context/UserContext'; // Make sure this path is correct
 
 interface NavbarProps {
   onChatClick?: () => void;
@@ -28,37 +28,18 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
   justifyContent: 'space-between',
-}));
-
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.common.white,
-  paddingLeft: theme.spacing(2),
-  paddingRight: theme.spacing(2),
-  display: 'flex',
-  alignItems: 'center',
-  width: '100%',
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  width: '100%',
-  paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+  alignItems: 'center',  // Ensure the items are centered
+  padding: '0 20px', // Add some padding to the sides for centering
 }));
 
 const Navbar: React.FC<NavbarProps> = ({ onChatClick }) => {
   const router = useRouter();
+  const { user, signOut } = useUser(); // Use the signOut function from the context
+
+  const handleSignOut = async () => {
+    await signOut(); // Sign the user out
+    router.push('/login'); // Redirect to the login page
+  };
 
   return (
     <>
@@ -76,7 +57,7 @@ const Navbar: React.FC<NavbarProps> = ({ onChatClick }) => {
               />
             </Typography>
           </Box>
-          
+
           {/* Buttons on the right side */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button>Info for</Button>
@@ -84,6 +65,9 @@ const Navbar: React.FC<NavbarProps> = ({ onChatClick }) => {
             <Button>Visit</Button>
             <Button>Give</Button>
             <Button>my.torontomu</Button>
+            {user && (  // Show the sign-out button only if the user is logged in
+              <Button onClick={handleSignOut}>Sign Out</Button>
+            )}
           </Box>
         </StyledToolbar>
       </TopAppBar>
@@ -95,7 +79,7 @@ const Navbar: React.FC<NavbarProps> = ({ onChatClick }) => {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-around', 
+              justifyContent: 'space-around',
               width: '100%',
               padding: '0 40px',
             }}
@@ -115,5 +99,6 @@ const Navbar: React.FC<NavbarProps> = ({ onChatClick }) => {
     </>
   );
 };
+
 
 export default Navbar;
