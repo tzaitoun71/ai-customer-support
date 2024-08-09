@@ -1,27 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Container, Typography, Box } from '@mui/material';
+import { Typography, Box } from '@mui/material';
 import Navbar from '../components/Navbar'; 
 import ChatPage from '../customer-support/page'; 
 
 const LandingPage = () => {
-  // State to control whether the chat is visible
   const [showChat, setShowChat] = useState(false);
 
-  // Function to handle when the user clicks "Chat with Us"
   const handleShowChat = () => {
     setShowChat(true);
   };
 
   return (
     <div>
-      {/* Navbar Component */}
       <Navbar onChatClick={handleShowChat} />
-
-      {/* Main Content */}
-      <Container
-        maxWidth="lg"
+      <Box
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -31,7 +25,6 @@ const LandingPage = () => {
         }}
       >
         {!showChat ? (
-          // Show the landing page content if chat is not active
           <Box
             sx={{
               textAlign: 'center',
@@ -39,6 +32,8 @@ const LandingPage = () => {
               boxShadow: 3,
               borderRadius: 2,
               backgroundColor: '#fff',
+              width: '100%',
+              maxWidth: '600px', 
             }}
           >
             <Typography variant="h4" gutterBottom>
@@ -49,10 +44,9 @@ const LandingPage = () => {
             </Typography>
           </Box>
         ) : (
-          // Show the chat interface if the user clicked "Chat with Us"
           <ChatPage />
         )}
-      </Container>
+      </Box>
     </div>
   );
 };

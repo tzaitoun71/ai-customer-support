@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Container, Typography, Button, CircularProgress, Box, Card, CardContent, CardActions } from '@mui/material';
+import { Typography, Button, CircularProgress, Box, Card, CardContent, CardActions } from '@mui/material';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../Firebase';
 import { useUser } from '../context/UserContext';
@@ -48,70 +48,73 @@ const LoginPage: React.FC = () => {
       alignItems="center"
       height="100vh"
       sx={{
-        overflow: 'hidden', // Prevent scrolling
+        overflow: 'hidden',
       }}
     >
-      <Container
-        maxWidth="sm"
+      <Box
         sx={{
+          width: '100%',
+          maxWidth: 400,
+          padding: 3,
+          boxShadow: 3,
+          borderRadius: 2,
+          backgroundColor: 'white',
           display: 'flex',
-          justifyContent: 'center',
+          flexDirection: 'column',
           alignItems: 'center',
-          height: '100vh',
         }}
       >
-        <Card sx={{ width: '100%', maxWidth: 400, padding: 3, boxShadow: 3, borderRadius: 2 }}>
-          <CardContent>
-            <Typography variant="h4" gutterBottom textAlign="center">
-              Toronto Metropolitan University
-            </Typography>
-            <Typography variant="h6" gutterBottom textAlign="center">
-              Customer Support
-            </Typography>
-            <Box textAlign="center" marginTop={2}>
-              {user ? (
-                <>
-                  <Typography variant="body1" gutterBottom>
-                    Welcome, {user.displayName}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    You are logged in as {user.email}
-                  </Typography>
-                </>
-              ) : (
-                <Typography variant="body1" gutterBottom>
-                  Please sign in to continue.
-                </Typography>
-              )}
-            </Box>
-          </CardContent>
-          <CardActions sx={{ justifyContent: 'center' }}>
+        <CardContent>
+          <Typography variant="h4" gutterBottom textAlign="center">
+            Toronto Metropolitan University
+          </Typography>
+          <Typography variant="h6" gutterBottom textAlign="center">
+            Customer Support
+          </Typography>
+          <Box textAlign="center" marginTop={2}>
             {user ? (
-              <Button variant="contained" color="secondary" onClick={signOut}>
-                Logout
-              </Button>
+              <>
+                <Typography variant="body1" gutterBottom>
+                  Welcome, {user.displayName}
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  You are logged in as {user.email}
+                </Typography>
+              </>
             ) : (
-              <Button
-                variant="contained"
-                onClick={handleLogin}
-                startIcon={<GoogleIcon />} // Add Google icon
-                sx={{
-                  backgroundColor: '#0056A3', // Use the shade of blue for the button
-                  color: '#fff',
-                  '&:hover': {
-                    backgroundColor: '#004494',
-                  },
-                  padding: '10px 20px',
-                  borderRadius: '25px',
-                  fontWeight: 'bold',
-                }}
-              >
-                Login with Google
-              </Button>
+              <Typography variant="body1" gutterBottom>
+                Please sign in to continue.
+              </Typography>
             )}
-          </CardActions>
-        </Card>
-      </Container>
+          </Box>
+        </CardContent>
+        <CardActions sx={{ justifyContent: 'center', width: '100%' }}>
+          {user ? (
+            <Button variant="contained" color="secondary" onClick={signOut}>
+              Logout
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleLogin}
+              startIcon={<GoogleIcon />}
+              sx={{
+                backgroundColor: '#0056A3',
+                color: '#fff',
+                '&:hover': {
+                  backgroundColor: '#004494',
+                },
+                padding: '10px 20px',
+                borderRadius: '25px',
+                fontWeight: 'bold',
+                width: '100%',
+              }}
+            >
+              Login with Google
+            </Button>
+          )}
+        </CardActions>
+      </Box>
     </Box>
   );
 };

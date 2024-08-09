@@ -1,9 +1,10 @@
 html, body {
   height: 100%;
   margin: 0;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #fff; 
+  background-color: #fff;
+}
+
+body {
+  display: block; 
+  overflow: hidden; 
 }
