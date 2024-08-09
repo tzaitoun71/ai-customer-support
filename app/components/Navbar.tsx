@@ -59,7 +59,7 @@ const Navbar: React.FC<NavbarProps> = ({ onChatClick }) => {
           </Box>
 
           {/* Buttons on the right side */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '18px' }}>
             <Button>Info for</Button>
             <Button>Apply</Button>
             <Button>Visit</Button>
