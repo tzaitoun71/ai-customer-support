@@ -43,10 +43,10 @@ let chatHistory: Array<HumanMessage | AIMessage | SystemMessage> = []; // Initia
 
 export const POST = async (req: NextRequest) => {
   try {
-    console.log("Received request");
+    // console.log("Received request");
 
     const { question } = await req.json();
-    console.log("Question received:", question);
+    // console.log("Question received:", question);
 
     if (!question) {
       console.log("No question provided");
@@ -54,14 +54,14 @@ export const POST = async (req: NextRequest) => {
     }
 
     const { selfQueryRetriever, llm } = await setupPineconeLangchain();
-    console.log("Pinecone and LangChain setup complete");
+    // console.log("Pinecone and LangChain setup complete");
 
-    console.log("Embedding question and searching for relevant documents...");
+    // console.log("Embedding question and searching for relevant documents...");
     const relevantDocuments = await selfQueryRetriever.invoke(question);
-    console.log("Relevant documents retrieved:", relevantDocuments);
+    // console.log("Relevant documents retrieved:", relevantDocuments);
 
     const documentContents = relevantDocuments.map(doc => doc.pageContent).join("\n");
-    console.log("Document contents:", documentContents);
+    // console.log("Document contents:", documentContents);
 
     // Append current question to chat history
     chatHistory.push(new HumanMessage(question));
@@ -73,15 +73,15 @@ export const POST = async (req: NextRequest) => {
       new AIMessage(documentContents),
     ];
 
-    console.log("Messages prepared for LLM:", messages);
+    // console.log("Messages prepared for LLM:", messages);
 
     // Generate a response based on the retrieved documents and chat history
     const response = await llm.invoke(messages);
-    console.log("Response generated:", response);
+    // console.log("Response generated:", response);
 
     // Ensure the response content is a string
     const answerContent = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
-    console.log("Generated response content:", answerContent);
+    // console.log("Generated response content:", answerContent);
 
     // Append assistant's response to chat history
     chatHistory.push(new AIMessage(answerContent));
