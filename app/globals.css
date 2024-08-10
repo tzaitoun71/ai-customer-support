@@ -1,9 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
 html, body {
   height: 100%;
   margin: 0;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #fff; 
+  background-color: #fff;
+  font-family: 'Roboto', sans-serif; /* Apply the Roboto font */
+}
+
+body {
+  display: flex; 
+  flex-direction: column;
+  overflow: hidden; 
+  background: url('/bg4.jpg') no-repeat center center fixed;
+  background-size: cover;
+  z-index: -1; 
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000; 
 }

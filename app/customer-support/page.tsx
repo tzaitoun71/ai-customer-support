@@ -2,18 +2,16 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Container,
+  Box,
   TextField,
   Button,
   List,
   ListItemText,
   Typography,
-  Box,
-  Paper,
   ListItem,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import { blue, yellow } from '@mui/material/colors';
+import ReactMarkdown from 'react-markdown';
 
 const ChatPage = () => {
   const [message, setMessage] = useState('');
@@ -31,21 +29,21 @@ const ChatPage = () => {
     setIsTyping(true);
 
     try {
-      const response = await fetch('/api/customer-ai', {
+      const response = await fetch('/api/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ question: message }),
       });
 
       const data = await response.json();
-      const botMessage = { user: message, bot: data.response };
+      const botMessageContent = data.response;
+      const botMessage = { user: message, bot: botMessageContent };
 
       setChat((prevChat) => [...prevChat, botMessage]);
       setIsTyping(false);
 
-      // Scroll to the bottom of the chat container
       if (chatContainerRef.current) {
         chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
       }
@@ -67,35 +65,28 @@ const ChatPage = () => {
   }, [isTyping]);
 
   useEffect(() => {
-    // Scroll to the bottom of the chat container when a new message is added
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chat]);
 
   return (
-    <Container
-      maxWidth="lg"
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-      }}
-    >
       <Box
         sx={{
           width: '100%',
-          maxWidth: '900px',
+          maxWidth: '700px',
           backgroundColor: 'white',
-          boxShadow: 3,
-          borderRadius: 2,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+          borderRadius: '15px', 
           display: 'flex',
           flexDirection: 'column',
-          padding: 2,
+          padding: 3,
+          flexGrow: 0,
+          height: 'calc(100% - 190px)',
+          boxSizing: 'border-box',
         }}
       >
-        <Typography variant="h4" align="center" gutterBottom>
+        <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
           TMU Support Assistant
         </Typography>
         <Box
@@ -106,11 +97,10 @@ const ChatPage = () => {
             flexDirection: 'column',
             overflowY: 'auto',
             padding: 2,
-            backgroundColor: '#fafafa',
-            borderRadius: 2,
-            boxShadow: 1,
-            width: '800px',
-            height: '800px',
+            backgroundColor: '#ffffff',
+            borderRadius: '10px',
+            boxShadow: 'inset 0 0 10px rgba(0, 0, 0, 0.1)',
+            minHeight: 'auto',
           }}
         >
           <List sx={{ flexGrow: 1 }}>
@@ -119,17 +109,25 @@ const ChatPage = () => {
                 <Box
                   component="div"
                   sx={{
-                    backgroundColor: chatItem.bot ? yellow[100] : blue[100],
-                    color: 'black',
-                    borderRadius: 2,
-                    padding: '10px 15px',
+                    backgroundColor: chatItem.bot ? '#fcf07e' : '#007bff', 
+                    color: chatItem.bot ? '#333' : '#fff',
+                    borderRadius: '15px',
+                    padding: '10px 20px',
                     maxWidth: '60%',
                     textAlign: 'left',
                     wordBreak: 'break-word',
-                    boxShadow: 1,
+                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+                    transition: 'transform 0.2s ease',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                    },
                   }}
                 >
-                  <ListItemText primary={chatItem.bot ? chatItem.bot : chatItem.user} />
+                  {chatItem.bot ? (
+                    <ReactMarkdown>{chatItem.bot}</ReactMarkdown>
+                  ) : (
+                    <ListItemText primary={chatItem.user} />
+                  )}
                 </Box>
               </ListItem>
             ))}
@@ -138,22 +136,26 @@ const ChatPage = () => {
                 <Box
                   component="div"
                   sx={{
-                    backgroundColor: yellow[100],
-                    borderRadius: 2,
-                    padding: '10px 15px',
+                    backgroundColor: '#fcf07e',
+                    borderRadius: '15px',
+                    padding: '10px 20px',
                     maxWidth: '60%',
                     textAlign: 'left',
                     wordBreak: 'break-word',
-                    boxShadow: 1,
+                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+                    height: '40px', 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center', 
                   }}
                 >
-                  <ListItemText primary={typingIndicator} />
+                  <ListItemText primary={typingIndicator || '...'} />
                 </Box>
               </ListItem>
             )}
           </List>
         </Box>
-        <Box sx={{ display: 'flex', marginTop: 2, padding: '0 16px', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', marginTop: 2, padding: '0 8px', alignItems: 'center', width: '100%' }}>
           <TextField
             label="Type your message"
             variant="outlined"
@@ -163,14 +165,33 @@ const ChatPage = () => {
             onKeyPress={(e) => {
               if (e.key === 'Enter') handleSendMessage();
             }}
-            sx={{ marginRight: 2 }}
+            sx={{ 
+              marginRight: '12px',
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+            }}
           />
-          <Button variant="contained" color="primary" onClick={handleSendMessage} endIcon={<SendIcon />}>
+          <Button 
+            variant="contained" 
+            sx={{
+              marginRight: '16px',
+              backgroundColor: '#007bff',
+              color: '#ffffff',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              '&:hover': {
+                backgroundColor: '#0056a3',
+              },
+              padding: '10px 16px', 
+              minWidth: '75px', 
+            }}
+            onClick={handleSendMessage} 
+            endIcon={<SendIcon />}
+          >
             Send
           </Button>
         </Box>
       </Box>
-    </Container>
   );
 };
 
