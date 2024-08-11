@@ -5,6 +5,7 @@ html, body {
   margin: 0;
   background-color: #fff;
   font-family: 'Roboto', sans-serif; /* Apply the Roboto font */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 body {
