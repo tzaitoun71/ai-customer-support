@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 interface UserContextProps {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>; // Add setUser to the interface
   signOut: () => void;
 }
 
@@ -51,7 +52,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <UserContext.Provider value={{ user, signOut }}>
+    <UserContext.Provider value={{ user, setUser, signOut }}>
       {children}
     </UserContext.Provider>
   );
