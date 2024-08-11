@@ -8,6 +8,12 @@ import { PineconeTranslator } from "@langchain/pinecone";
 import { HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 import { prompt } from '@/app/utils/SystemPrompt';
 
+interface ChatHistory {
+  [key: string]: Array<HumanMessage | AIMessage | SystemMessage>;
+}
+
+const chatHistories: ChatHistory = {}; // Store chat history per user session
+
 const setupPineconeLangchain = async () => {
   const pinecone = new Pinecone({
     apiKey: process.env.PINECONE_API_KEY as string,
@@ -39,52 +45,41 @@ const setupPineconeLangchain = async () => {
   return { selfQueryRetriever, llm };
 };
 
-let chatHistory: Array<HumanMessage | AIMessage | SystemMessage> = []; // Initialize chat history
-
 export const POST = async (req: NextRequest) => {
   try {
-    // console.log("Received request");
+    const { question, userId } = await req.json();
 
-    const { question } = await req.json();
-    // console.log("Question received:", question);
-
-    if (!question) {
-      console.log("No question provided");
-      return NextResponse.json({ error: "No question provided" }, { status: 400 });
+    if (!question || !userId) {
+      return NextResponse.json({ error: "No question or user ID provided" }, { status: 400 });
     }
 
     const { selfQueryRetriever, llm } = await setupPineconeLangchain();
-    // console.log("Pinecone and LangChain setup complete");
 
-    // console.log("Embedding question and searching for relevant documents...");
+    // Initialize chat history for the user if it doesn't exist
+    if (!chatHistories[userId]) {
+      chatHistories[userId] = [];
+    }
+
+    // Fetch relevant documents based on the user's query
     const relevantDocuments = await selfQueryRetriever.invoke(question);
-    // console.log("Relevant documents retrieved:", relevantDocuments);
-
     const documentContents = relevantDocuments.map(doc => doc.pageContent).join("\n");
-    // console.log("Document contents:", documentContents);
 
     // Append current question to chat history
-    chatHistory.push(new HumanMessage(question));
+    chatHistories[userId].push(new HumanMessage(question));
 
     // Prepare the current set of messages including the previous history
     const messages = [
       new SystemMessage(prompt),
-      ...chatHistory, // Include previous history
+      ...chatHistories[userId], // Include previous history
       new AIMessage(documentContents),
     ];
 
-    // console.log("Messages prepared for LLM:", messages);
-
     // Generate a response based on the retrieved documents and chat history
     const response = await llm.invoke(messages);
-    // console.log("Response generated:", response);
-
-    // Ensure the response content is a string
     const answerContent = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
-    // console.log("Generated response content:", answerContent);
 
     // Append assistant's response to chat history
-    chatHistory.push(new AIMessage(answerContent));
+    chatHistories[userId].push(new AIMessage(answerContent));
 
     return NextResponse.json({ response: answerContent });
   } catch (error) {
@@ -95,4 +90,20 @@ export const POST = async (req: NextRequest) => {
 
 export const OPTIONS = async () => {
   return NextResponse.json({}, { status: 200 });
+};
+
+// New function to clear chat history when user signs out
+export const DELETE = async (req: NextRequest) => {
+  try {
+    const { userId } = await req.json();
+
+    if (chatHistories[userId]) {
+      delete chatHistories[userId]; // Clear chat history for this user
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error clearing chat history:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 };
